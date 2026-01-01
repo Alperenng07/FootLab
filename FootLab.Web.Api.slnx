@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="FootLab.Bussines/FootLab.Bussines.csproj" />
+  <Project Path="FootLab.DataAccess/FootLab.DataAccess.csproj" />
+  <Project Path="FootLab.Entities/FootLab.Entities.csproj" />
+  <Project Path="FootLab.Web.Api/FootLab.Web.Api.csproj" />
+</Solution>
