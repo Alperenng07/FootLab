@@ -32,6 +32,8 @@ builder.Services.AddScoped<IBaseService<Player>, BaseService<Player>>();
 builder.Services.AddScoped<IBaseService<Match>, BaseService<Match>>();
 builder.Services.AddScoped<IBaseService<Goal>, BaseService<Goal>>();
 
+//Web Scrapping
+builder.Services.AddScoped<TffScraper>();
 
 builder.Services.AddDbContext<DataContext>(x =>
     x.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),

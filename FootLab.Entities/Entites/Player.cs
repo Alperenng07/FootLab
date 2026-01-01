@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,7 +40,11 @@ namespace FootLab.Entities.Entites
 
         public Boolean? isFreeAgent { get; set; }  
 
-        public String TffId { get; set; } 
+        public String TffId { get; set; }
+        // Players tablosuna eklenecek kısım:
+        public Guid TeamId { get; set; } // Veritabanındaki uuid ile tam uyumlu
 
+        [ForeignKey("TeamId")]
+        public Team Team { get; set; } // Bu da o oyuncunun takımına kolayca ulaşmanı sağlar
     }
 }
