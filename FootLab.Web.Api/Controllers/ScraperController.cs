@@ -20,13 +20,13 @@ namespace FootLab.Web.Api.Controllers
         {
             try
             {
-                var teamList = await _tffScraper.ScrapeDenizliAmateurTeamsAsync();
+               // var teamList = await _tffScraper.ScrapeDenizliAmateurTeamsAsync(Guid targetGroupId,  "2025-2026");
 
                 return Ok(new
                 {
-                    Success = true,
-                    TotalCount = teamList.Count,
-                    Teams = teamList
+                    //Success = true,
+                    //TotalCount = teamList.Count,
+                    //Teams = teamList
                 });
             }
             catch (Exception ex)

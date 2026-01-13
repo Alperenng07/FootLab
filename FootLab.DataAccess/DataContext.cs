@@ -27,12 +27,61 @@ namespace FootLab.DataAccess
 
 
         //public DbSet<User> Users { get; set; }
-        public DbSet<Player> Players { get; set; }
-        public DbSet<Match> Matchs { get; set; }
+        // Tabloların (DbSet'ler)
+        public DbSet<League> Leagues { get; set; }
+        public DbSet<Group> Groups { get; set; }
         public DbSet<Team> Teams { get; set; }
+        public DbSet<TeamSeasonDetail> TeamSeasonDetails { get; set; }
+        public DbSet<Player> Players { get; set; }
+        public DbSet<Match> Matches { get; set; }
         public DbSet<Goal> Goals { get; set; }
+        public DbSet<Standing> Standings { get; set; }
 
+   
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
 
+            // 1. Maç Tablosu İlişkileri (Ev Sahibi / Deplasman Çakışmasını Önler)
+            modelBuilder.Entity<Match>()
+                .HasOne(m => m.HomeTeam)
+                .WithMany()
+                .HasForeignKey(m => m.HomeTeamId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Match>()
+                .HasOne(m => m.AwayTeam)
+                .WithMany()
+                .HasForeignKey(m => m.AwayTeamId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 2. Gol Tablosu İlişkileri
+            modelBuilder.Entity<Goal>()
+                .HasOne(g => g.Match)
+                .WithMany(m => m.Goals)
+                .HasForeignKey(g => g.MatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Goal>()
+                .HasOne(g => g.Team)
+                .WithMany()
+                .HasForeignKey(g => g.TeamId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 3. Puan Durumu (Standing) İlişkileri
+            modelBuilder.Entity<Standing>()
+                .HasOne(s => s.Team)
+                .WithMany()
+                .HasForeignKey(s => s.TeamId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 4. Oyuncu Takım İlişkisi (Takım silinirse oyuncu null olsun)
+            modelBuilder.Entity<Player>()
+                .HasOne(p => p.Team)
+                .WithMany()
+                .HasForeignKey(p => p.TeamId)
+                .OnDelete(DeleteBehavior.SetNull);
+        }
 
 
 

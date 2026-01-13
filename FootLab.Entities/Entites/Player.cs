@@ -26,25 +26,29 @@ namespace FootLab.Entities.Entites
     public class Player : BaseEntity
     {
         [Required(ErrorMessage = "FirstName is required.")]
-        public String FirstName { get; set; } //Ad
+        public String FirstName { get; set; }
 
-        public String? MidName { get; set; } //İkinci Ad
+        public String? MidName { get; set; }
 
         [Required(ErrorMessage = "LastName is required.")]
-        public String LastName { get; set; } //Soyad
+        public String LastName { get; set; }
 
+        public DateTime BirthDay { get; set; }
+        public PositionCode? Position { get; set; }
+        public StrongFootCode? StrongFoot { get; set; }
 
-        public DateTime BirthDay { get; set; }  
-        public PositionCode? Position { get; set; } 
-        public StrongFootCode? StrongFoot { get; set; }  
-
-        public Boolean? isFreeAgent { get; set; }  
+        public Boolean? isFreeAgent { get; set; }
 
         public String TffId { get; set; }
-        // Players tablosuna eklenecek kısım:
-        public Guid TeamId { get; set; } // Veritabanındaki uuid ile tam uyumlu
 
+        // --- KRİTİK EKLEMELER ---
+
+        // 1. Foreign Key: Oyuncunun bağlı olduğu takımın ID'si. 
+        // Guid? (Nullable) yaptık çünkü oyuncu "Free Agent" (Takımsız) olabilir.
+        public Guid? TeamId { get; set; }
+
+        // 2. Navigation Property: EF Core bu sayede oyuncudan takıma gitmeni sağlar.
         [ForeignKey("TeamId")]
-        public Team Team { get; set; } // Bu da o oyuncunun takımına kolayca ulaşmanı sağlar
+        public Team? Team { get; set; }
     }
 }

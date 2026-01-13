@@ -32,7 +32,33 @@ namespace FootLab.Bussines.Services
 
         public async Task<List<Team>> ScrapeDenizliAmateurTeamsAsync()
         {
+            // 1. GENEL SABİTLER
+            string currentSeason = "2025-2026";
+            string targetLeagueName = "Denizli Amatör Ligleri"; // Tüm amatörleri bu çatı altında topluyoruz
+            string targetGroupName = "Genel Takım Havuzu";
+
             var scrapedTeams = new List<Team>();
+
+            // 2. ÖN HAZIRLIK: Genel Lig ve Grup ID'sini al (Yoksa oluştur)
+            var league = await _context.Leagues.FirstOrDefaultAsync(l => l.Name == targetLeagueName);
+            if (league == null)
+            {
+                league = new League { Name = targetLeagueName };
+                _context.Leagues.Add(league);
+                await _context.SaveChangesAsync();
+            }
+
+            var group = await _context.Groups.FirstOrDefaultAsync(g => g.Name == targetGroupName && g.LeagueId == league.Id);
+            if (group == null)
+            {
+                group = new Group { Name = targetGroupName, LeagueId = league.Id };
+                _context.Groups.Add(group);
+                await _context.SaveChangesAsync();
+            }
+
+            Guid targetGroupId = group.Id;
+
+            // 3. SELENIUM AYARLARI
             var options = new ChromeOptions();
             options.AddArgument("--headless=new");
             options.AddArgument("--window-size=1920,1080");
@@ -41,36 +67,41 @@ namespace FootLab.Bussines.Services
 
             using (IWebDriver driver = new ChromeDriver(options))
             {
+                var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
+                IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+
+                async Task ApplyFilterAsync()
+                {
+                    var cityInput = wait.Until(d => d.FindElement(By.Id("ctl00_MPane_m_119_2780_ctnr_m_119_2780_SehirSelector1_combo_Input")));
+                    cityInput.Clear();
+                    cityInput.SendKeys("DENİZLİ" + Keys.Enter);
+                    await Task.Delay(3000);
+
+                    var statusInput = wait.Until(d => d.FindElement(By.Id("ctl00_MPane_m_119_2780_ctnr_m_119_2780_cmbStatu_Input")));
+                    statusInput.Clear();
+                    statusInput.SendKeys("Amatör" + Keys.Enter);
+                    await Task.Delay(2000);
+
+                    driver.FindElement(By.Id("ctl00_MPane_m_119_2780_ctnr_m_119_2780_btnSave")).Click();
+                    await Task.Delay(4000);
+                }
+
                 try
                 {
                     driver.Navigate().GoToUrl("https://www.tff.org/default.aspx?pageID=119");
-                    var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
-                    IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+                    await ApplyFilterAsync();
 
-                    // Filtreleme Fonksiyonu
-                    Func<Task> applyFilter = async () => {
-                        var city = wait.Until(d => d.FindElement(By.Id("ctl00_MPane_m_119_2780_ctnr_m_119_2780_SehirSelector1_combo_Input")));
-                        city.Clear();
-                        city.SendKeys("DENİZLİ" + Keys.Enter);
-                        await Task.Delay(3000);
-                        var status = wait.Until(d => d.FindElement(By.Id("ctl00_MPane_m_119_2780_ctnr_m_119_2780_cmbStatu_Input")));
-                        status.Clear();
-                        status.SendKeys("Amatör" + Keys.Enter);
-                        await Task.Delay(2000);
-                        driver.FindElement(By.Id("ctl00_MPane_m_119_2780_ctnr_m_119_2780_btnSave")).Click();
-                        await Task.Delay(4000);
-                    };
-
-                    await applyFilter();
-
-                    for (int p = 1; p <= 7; p++)
+                    // TFF'de Denizli Amatör listesi genelde 7 sayfadan fazladır. 
+                    // Sayfa sayısını dinamik kontrol etmek için p <= 20 gibi yüksek bir sınır koyalım.
+                    for (int p = 1; p <= 20; p++)
                     {
                         wait.Until(d => d.FindElements(By.XPath("//table[contains(@id, 'rdgSonuclar')]//a[contains(@href, 'kulupID')]")).Count > 0);
                         var nodes = driver.FindElements(By.XPath("//table[contains(@id, 'rdgSonuclar')]//a[contains(@href, 'kulupID')]"));
 
+                        // Adana'ya düşme kontrolü
                         if (nodes.Any(n => n.Text.Contains("ADANA")))
                         {
-                            await applyFilter();
+                            await ApplyFilterAsync();
                             for (int jump = 2; jump <= p; jump++)
                             {
                                 var jumpBtn = driver.FindElement(By.XPath($"//td[contains(., 'Sayfalar')]//a[text()='{jump}']"));
@@ -92,306 +123,158 @@ namespace FootLab.Bussines.Services
                             try
                             {
                                 var row = node.FindElement(By.XPath("./ancestor::tr"));
-                                var imgElement = row.FindElement(By.TagName("img"));
-                                logoUrl = imgElement.GetAttribute("src");
+                                logoUrl = row.FindElement(By.TagName("img")).GetAttribute("src");
                             }
                             catch { logoUrl = null; }
 
                             if (!scrapedTeams.Any(t => t.TffId == tffId))
                             {
-                                scrapedTeams.Add(new Team
-                                {
-                                    Id = Guid.NewGuid(),
-                                    Name = teamName,
-                                    TffId = tffId,
-                                    LogoUrl = logoUrl,
-                                    LeagueCategory = (FootLab.Entities.Entites.LeagueCategoryCode)1,
-                                    // PostgreSQL için en güvenli tarih formatı:
-                                    CreatedAt = DateTime.UtcNow,
-                                    UpdatedAt = DateTime.UtcNow,
-                                    IsDeleted = false
-                                });
+                                scrapedTeams.Add(new Team { Name = teamName, TffId = tffId, LogoUrl = logoUrl });
                             }
                         }
 
-                        if (p < 7)
+                        // Bir sonraki sayfa var mı kontrolü
+                        try
                         {
-                            try
-                            {
-                                var nextLink = driver.FindElement(By.XPath($"//td[contains(., 'Sayfalar')]//a[text()='{p + 1}']"));
-                                js.ExecuteScript("arguments[0].click();", nextLink);
-                                await Task.Delay(4000);
-                            }
-                            catch { break; }
+                            var nextLink = driver.FindElement(By.XPath($"//td[contains(., 'Sayfalar')]//a[text()='{p + 1}']"));
+                            js.ExecuteScript("arguments[0].click();", nextLink);
+                            await Task.Delay(4000);
+                        }
+                        catch
+                        {
+                            // Sayfa numarası bulunamazsa (Listenin sonu) döngüden çık
+                            break;
                         }
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Scraping Hatası: {ex.Message}");
-                }
-                finally
-                {
-                    driver.Quit();
-                }
+                catch (Exception ex) { Console.WriteLine($"Scraping Hatası: {ex.Message}"); }
+                finally { driver.Quit(); }
             }
 
-            // 2. AŞAM: VERİTABANINA KAYIT
-            try
+            // 4. VERİTABANI KAYIT (TÜM LİSTE İÇİN)
+            foreach (var sTeam in scrapedTeams)
             {
-                if (scrapedTeams.Count == 0)
+                var team = await _context.Teams.FirstOrDefaultAsync(t => t.TffId == sTeam.TffId);
+                if (team == null)
                 {
-                    Console.WriteLine("Uyarı: Hiç takım bulunamadı!");
-                    return scrapedTeams;
-                }
-
-                int savedCount = 0;
-                foreach (var team in scrapedTeams)
-                {
-                    var exists = await _context.Teams.AnyAsync(t => t.TffId == team.TffId);
-                    if (!exists)
-                    {
-                        _context.Teams.Add(team);
-                        savedCount++;
-                    }
-                }
-
-                if (savedCount > 0)
-                {
-                    // Burası asıl kritik nokta
+                    team = sTeam;
+                    _context.Teams.Add(team);
                     await _context.SaveChangesAsync();
-                    Console.WriteLine($"{savedCount} yeni takım başarıyla DB'ye eklendi.");
                 }
-                else
-                {
-                    Console.WriteLine("Yeni takım bulunamadı, hepsi zaten DB'de mevcut.");
-                }
-            }
-            catch (Exception dbEx)
-            {
-                // Detaylı hata mesajı için InnerException kontrolü
-                var errorMsg = dbEx.InnerException != null ? dbEx.InnerException.Message : dbEx.Message;
-                Console.WriteLine($"KRİTİK DB HATASI: {errorMsg}");
-            }
 
+                var hasDetail = await _context.TeamSeasonDetails.AnyAsync(tsd =>
+                    tsd.TeamId == team.Id && tsd.GroupId == targetGroupId && tsd.Season == currentSeason);
+
+                if (!hasDetail)
+                {
+                    _context.TeamSeasonDetails.Add(new TeamSeasonDetail
+                    {
+                        TeamId = team.Id,
+                        GroupId = targetGroupId,
+                        Season = currentSeason
+                    });
+                }
+            }
+            await _context.SaveChangesAsync();
             return scrapedTeams;
         }
 
-
-
-        //public async Task<int> ScrapePlayersByTeamSearchAsync()
+        //public async Task<List<Team>> ScrapeDenizliAmateurTeamsAsync(Guid targetGroupId, string currentSeason = "2025-2026")
         //{
-        //    var teams = await _context.Teams.Where(t => !t.IsDeleted).ToListAsync();
-        //    int totalSaved = 0;
-
+        //    var scrapedTeams = new List<Team>();
         //    var options = new ChromeOptions();
-        //    options.AddArgument("--headless=new"); // Görerek test etmek istersen burayı yorum satırı yap
+        //    options.AddArgument("--headless=new");
+        //    // ... diğer options ayarların aynı kalsın ...
 
         //    using (IWebDriver driver = new ChromeDriver(options))
         //    {
-        //        var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
-
-        //        foreach (var team in teams)
+        //        try
         //        {
-        //            try
+        //            driver.Navigate().GoToUrl("https://www.tff.org/default.aspx?pageID=119");
+        //            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
+        //            IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+
+        //            // Filtreleme fonksiyonun (applyFilter) içeriği aynı kalsın...
+        //            await applyFilter();
+
+        //            for (int p = 1; p <= 7; p++)
         //            {
-        //                // 1. Oyuncu Arama Sayfasına Git
-        //                driver.Navigate().GoToUrl("https://www.tff.org/Default.aspx?pageID=130");
+        //                wait.Until(d => d.FindElements(By.XPath("//table[contains(@id, 'rdgSonuclar')]//a[contains(@href, 'kulupID')]")).Count > 0);
+        //                var nodes = driver.FindElements(By.XPath("//table[contains(@id, 'rdgSonuclar')]//a[contains(@href, 'kulupID')]"));
 
-        //                // 2. "Kulübe Göre" sekmesine tıkla
-        //                var clubTab = wait.Until(d => d.FindElement(By.XPath("//a[contains(text(), 'Kulübe Göre')]")));
-        //                clubTab.Click();
-        //                await Task.Delay(1000);
+        //                // ADANA kontrolü ve sayfa atlama mantığın aynı kalsın...
 
-        //                // 3. Kulüp Adını Yaz (Senin DB'deki tam ad)
-        //                var clubInput = driver.FindElement(By.Id("ctl00_MPane_m_130_711_ctnr_m_130_711_txtKulup"));
-        //                clubInput.Clear();
-        //                clubInput.SendKeys(team.Name);
-
-        //                // 4. Statü "Amatör" seç (Görselde Amatör seçili)
-        //                var statusInput = driver.FindElement(By.Id("ctl00_MPane_m_130_711_ctnr_m_130_711_cmbStatu_Input"));
-        //                statusInput.Clear();
-        //                statusInput.SendKeys("Amatör" + Keys.Enter);
-        //                await Task.Delay(1000);
-
-        //                // 5. Ara Butonuna Bas
-        //                var searchBtn = driver.FindElement(By.Id("ctl00_MPane_m_130_711_ctnr_m_130_711_btnAra"));
-        //                searchBtn.Click();
-
-        //                // 6. Sonuç Tablosunu Bekle
-        //                await Task.Delay(3000);
-        //                var rows = driver.FindElements(By.XPath("//table[contains(@id, 'dgBilgiBankasi')]//tr[td]"));
-
-        //                foreach (var row in rows)
+        //                foreach (var node in nodes)
         //                {
-        //                    var cells = row.FindElements(By.TagName("td"));
-        //                    if (cells.Count < 4) continue;
+        //                    var teamName = node.Text.Trim();
+        //                    if (string.IsNullOrEmpty(teamName) || teamName == "Detay") continue;
 
-        //                    string licenseNo = cells[0].Text.Trim(); // Lisans No
-        //                    string fullName = cells[1].Text.Trim();  // Ad-Soyad
-        //                    string birthDateStr = cells[3].Text.Trim(); // Doğum Tarihi
+        //                    var href = node.GetAttribute("href");
+        //                    var tffId = href.Contains("kulupID=") ? href.Split("kulupID=")[1].Split('&')[0] : "";
 
-        //                    // İsim parçalama
-        //                    var nameParts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        //                    string firstName = nameParts[0];
-        //                    string midName = nameParts.Length > 2 ? string.Join(" ", nameParts.Skip(1).Take(nameParts.Length - 2)) : "";
-        //                    string lastName = nameParts.Length > 1 ? nameParts.Last() : "";
-
-        //                    // Doğum tarihi parse
-        //                    DateTime? birthDay = null;
-        //                    if (DateTime.TryParse(birthDateStr, out DateTime dt))
-        //                        birthDay = DateTime.SpecifyKind(dt, DateTimeKind.Utc);
-
-        //                    // Lisans No (TffId) üzerinden kontrol et (Daha güvenli)
-        //                    var exists = await _context.Players.AnyAsync(p => p.TffId == licenseNo);
-
-        //                    if (!exists)
-        //                    {
-        //                        _context.Players.Add(new Player
-        //                        {
-        //                            Id = Guid.NewGuid(),
-        //                            FirstName = firstName,
-        //                            MidName = midName,
-        //                            LastName = lastName,
-        //                            BirthDay = birthDay ?? DateTime.MinValue,
-        //                            TffId = licenseNo, // Lisans numarasını TffId'ye koyuyoruz
-        //                            TeamId = team.Id,
-        //                            isFreeAgent = false,
-        //                            CreatedAt = DateTime.UtcNow,
-        //                            UpdatedAt = DateTime.UtcNow,
-        //                            IsDeleted = false
-        //                        });
-        //                        totalSaved++;
-        //                    }
-        //                }
-        //                await _context.SaveChangesAsync();
-        //                Console.WriteLine($"{team.Name}: {rows.Count} oyuncu işlendi.");
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                Console.WriteLine($"{team.Name} aranırken hata: {ex.Message}");
-        //            }
-        //        }
-        //    }
-        //    return totalSaved;
-        //}
-        //public async Task<int> ScrapePlayersByTeamSearchAsync()
-        //{
-        //    var teams = await _context.Teams.Where(t => !t.IsDeleted).ToListAsync();
-        //    int totalSaved = 0;
-
-        //    var options = new ChromeOptions();
-        //    options.AddArgument("--window-size=1920,1080");
-        //    options.AddArgument("--disable-blink-features=AutomationControlled");
-
-        //    using (IWebDriver driver = new ChromeDriver(options))
-        //    {
-        //        var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
-        //        IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
-
-        //        driver.Navigate().GoToUrl("https://www.tff.org/Default.aspx?pageID=130");
-        //        await Task.Delay(5000);
-
-        //        // 1. Sekme Seçimi
-        //        var clubTab = wait.Until(d => d.FindElement(By.XPath("//span[contains(text(),'Kulübe Göre')]")));
-        //        clubTab.Click();
-        //        await Task.Delay(5000);
-
-        //        // 2. Filtre Seçimleri
-        //        await GarantiliFiltreSec(driver, wait, "_ks_Input", "Amatör");
-        //        await GarantiliFiltreSec(driver, wait, "_f2_Input", "Faal");
-
-        //        // 3. Takım Döngüsü
-        //        foreach (var team in teams)
-        //        {
-        //            try
-        //            {
-        //                // KULÜP ADI: Dinamik bulma
-        //                var clubInput = wait.Until(d => {
-        //                    var el = d.FindElement(By.CssSelector("input[id*='txtKulupAdi']"));
-        //                    return el.Displayed ? el : null;
-        //                });
-        //                clubInput.Clear();
-        //                clubInput.SendKeys(team.Name);
-        //                await Task.Delay(1000);
-
-        //                // ARA BUTONU: Yeni ID yapısına göre düzenlendi (btnSearch2)
-        //                IWebElement searchBtn = null;
-        //                for (int i = 0; i < 5; i++)
-        //                {
+        //                    var logoUrl = "";
         //                    try
         //                    {
-        //                        // Sitedeki 'Ara' yazan ve ID'si değişen butonu yakalar
-        //                        searchBtn = driver.FindElement(By.CssSelector("input[id*='btnSearch2'], input[id*='btnAra']"));
-        //                        if (searchBtn.Displayed) break;
+        //                        var row = node.FindElement(By.XPath("./ancestor::tr"));
+        //                        logoUrl = row.FindElement(By.TagName("img")).GetAttribute("src");
         //                    }
-        //                    catch { await Task.Delay(1000); }
-        //                }
+        //                    catch { logoUrl = null; }
 
-        //                if (searchBtn != null)
-        //                {
-        //                    // Butonu görünür alana kaydır ve odaklan
-        //                    js.ExecuteScript("arguments[0].scrollIntoView({block: 'center'});", searchBtn);
-        //                    await Task.Delay(500);
-
-        //                    // Önce klasik click, yemezse JS click
-        //                    try { searchBtn.Click(); }
-        //                    catch { js.ExecuteScript("arguments[0].click();", searchBtn); }
-        //                }
-        //                else
-        //                {
-        //                    Console.WriteLine($"{team.Name}: Ara butonu bulunamadı.");
-        //                    continue;
-        //                }
-
-        //                Console.WriteLine($"{team.Name} sorgulanıyor...");
-
-        //                // 4. Veri Bekleme Senkronizasyonu
-        //                bool dataCame = false;
-        //                for (int i = 0; i < 15; i++)
-        //                {
-        //                    await Task.Delay(1500);
-        //                    // Tablonun güncellendiğini anlamak için Grid satırlarını say
-        //                    var rows = driver.FindElements(By.XPath("//table[contains(@id, 'dgBilgiBankasi')]//tr[contains(@class, 'Grid')]"));
-        //                    if (rows.Count > 0) { dataCame = true; break; }
-        //                    if (driver.PageSource.Contains("Kayıt bulunamadı")) break;
-        //                }
-
-        //                if (!dataCame) continue;
-
-        //                // 5. Veri Kaydetme
-        //                var finalRows = driver.FindElements(By.XPath("//table[contains(@id, 'dgBilgiBankasi')]//tr[contains(@class, 'Grid')]"));
-        //                foreach (var row in finalRows)
-        //                {
-        //                    var cells = row.FindElements(By.TagName("td"));
-        //                    if (cells.Count < 2) continue;
-
-        //                    string tffId = cells[0].Text.Trim();
-        //                    if (!await _context.Players.AnyAsync(p => p.TffId == tffId))
+        //                    if (!scrapedTeams.Any(t => t.TffId == tffId))
         //                    {
-        //                        var names = cells[1].Text.Trim().Split(' ');
-        //                        _context.Players.Add(new Player
+        //                        // --- YENİ MODEL YAPISI ---
+        //                        scrapedTeams.Add(new Team
         //                        {
-        //                            Id = Guid.NewGuid(),
-        //                            FirstName = names[0],
-        //                            LastName = names.Length > 1 ? names.Last() : "",
+        //                            Name = teamName,
         //                            TffId = tffId,
-        //                            TeamId = team.Id,
-        //                            CreatedAt = DateTime.UtcNow
+        //                            LogoUrl = logoUrl
+        //                            // LeagueCategory BURADAN KALDIRILDI!
         //                        });
-        //                        totalSaved++;
         //                    }
         //                }
-        //                await _context.SaveChangesAsync();
-        //                Console.WriteLine($"{team.Name} bitti. Toplam Yeni: {totalSaved}");
-
-        //                // Diğer takıma geçmeden önce kısa bir nefes (TFF koruması için)
-        //                await Task.Delay(1000);
+        //                // Sayfa değiştirme mantığın aynı kalsın...
         //            }
-        //            catch (Exception ex) { Console.WriteLine($"Takım Hatası: {team.Name} -> {ex.Message}"); }
         //        }
+        //        catch (Exception ex) { Console.WriteLine($"Scraping Hatası: {ex.Message}"); }
+        //        finally { driver.Quit(); }
         //    }
-        //    return totalSaved;
+
+        //    // --- VERİTABANINA KAYIT AŞAMASI (YENİ MANTIK) ---
+        //    try
+        //    {
+        //        foreach (var sTeam in scrapedTeams)
+        //        {
+        //            // 1. Takım var mı kontrol et veya ekle
+        //            var team = await _context.Teams.FirstOrDefaultAsync(t => t.TffId == sTeam.TffId);
+        //            if (team == null)
+        //            {
+        //                team = sTeam;
+        //                _context.Teams.Add(team);
+        //                await _context.SaveChangesAsync(); // ID oluşması için
+        //            }
+
+        //            // 2. Takımı bu sezona ve gruba bağla (TeamSeasonDetail)
+        //            var isAlreadyInGroup = await _context.TeamSeasonDetails.AnyAsync(tsd =>
+        //                tsd.TeamId == team.Id &&
+        //                tsd.GroupId == targetGroupId &&
+        //                tsd.Season == currentSeason);
+
+        //            if (!isAlreadyInGroup)
+        //            {
+        //                _context.TeamSeasonDetails.Add(new TeamSeasonDetail
+        //                {
+        //                    TeamId = team.Id,
+        //                    GroupId = targetGroupId,
+        //                    Season = currentSeason
+        //                });
+        //            }
+        //        }
+        //        await _context.SaveChangesAsync();
+        //        Console.WriteLine("İşlem başarıyla tamamlandı.");
+        //    }
+        //    catch (Exception ex) { Console.WriteLine($"Hata: {ex.Message}"); }
+
+        //    return scrapedTeams;
         //}
 
 
@@ -418,8 +301,8 @@ namespace FootLab.Bussines.Services
                 await Task.Delay(5000);
 
                 // 2. Filtre Seçimleri
-                await GarantiliFiltreSec(driver, wait, "_ks_Input", "Amatör");
-                await GarantiliFiltreSec(driver, wait, "_f2_Input", "Faal");
+                await FiltrSeelect(driver, wait, "_ks_Input", "Amatör");
+                await FiltrSeelect(driver, wait, "_f2_Input", "Faal");
 
                 // 3. Takım Döngüsü
                 foreach (var team in teams)
@@ -523,7 +406,7 @@ namespace FootLab.Bussines.Services
 
 
         // $find hatası vermeyen, fiziksel tıklama ve değişim simülasyonu yapan metod
-        private async Task GarantiliFiltreSec(IWebDriver driver, WebDriverWait wait, string idPart, string hedefMetin)
+        private async Task FiltrSeelect(IWebDriver driver, WebDriverWait wait, string idPart, string hedefMetin)
         {
             var input = wait.Until(d => d.FindElement(By.CssSelector($"input[id*='{idPart}']")));
 
