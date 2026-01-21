@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenQA.Selenium.Interactions;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -10,18 +11,29 @@ namespace FootLab.Entities.Entites
 {
     public enum PositionCode
     {
+        Unknown = 0,
         GK = 1, // Goalkeeper
-        DF = 2, // Defender
-        MF = 3, // Midfielder
-        FW = 4  // Forward
+        CD = 2, // Central Defender
+        LB = 3, // Left Back
+        RB = 4, // Right Back
+        MF = 5, // Midfielder
+        FW = 6  // Forward
+           
     }
 
     public enum StrongFootCode
     {
+        Unknown = 0,
         Left = 1,
         Right = 2,
         Both = 3
     }
+    public enum GenderCode 
+    { 
+        Unknown = 0, 
+        Male = 1, 
+        Female = 2
+   }
 
     public class Player : BaseEntity
     {
@@ -50,5 +62,15 @@ namespace FootLab.Entities.Entites
         // 2. Navigation Property: EF Core bu sayede oyuncudan takıma gitmeni sağlar.
         [ForeignKey("TeamId")]
         public Team? Team { get; set; }
+
+
+        // ... mevcut alanlar ...
+        public GenderCode Gender { get; set; } = GenderCode.Male; // Varsayılan Erkek
+
+        // Nation İlişkisi
+        public Guid? NationId { get; set; }
+
+        [ForeignKey("NationId")]
+        public Nation? Nation { get; set; }
     }
 }
