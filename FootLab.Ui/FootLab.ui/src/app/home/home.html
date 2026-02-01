@@ -1,0 +1,50 @@
+
+<div class="relative h-[25vh] min-h-[220px] w-full flex flex-col items-center justify-center px-6 overflow-hidden shadow-lg shrink-0">
+
+  <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&q=80&w=1000"
+       class="absolute inset-0 w-full h-full object-cover" alt="Stadium">
+  <div class="absolute inset-0 bg-gradient-to-b from-black/80 to-black/30"></div>
+
+  <div class="relative z-10 w-full max-w-2xl text-center flex flex-col items-center">
+
+
+    <h1 class="text-white text-3xl md:text-5xl font-black italic tracking-tighter uppercase leading-[0.9] drop-shadow-2xl mb-4">
+      Amatör Futbolun <br>
+      <span class="text-[#00a651] drop-shadow-[0_0_15px_rgba(0,166,81,0.5)]">Dijital Dönüşümü</span>
+    </h1>
+
+    <p class="text-white/60 text-[9px] font-bold uppercase tracking-[0.2em] italic mb-6">
+      Profesyonel Veri • Amatör Heyecan • Tek Platform
+    </p>
+
+    <div class="w-full max-w-lg flex bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-1.5 border border-white/20 transition-all focus-within:ring-2 focus-within:ring-green-500/50">
+      <input type="text"
+             placeholder="Oyuncu, kulüp veya lig ara..."
+             class="flex-1 px-4 py-2.5 text-xs font-bold text-slate-700 bg-transparent focus:outline-none">
+      <button class="bg-[#00a651] text-white px-8 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#008c44] transition-all active:scale-95 shadow-lg shadow-green-900/20">
+        Ara
+      </button>
+    </div>
+
+  </div>
+</div>
+  <div class="flex-1 w-full max-w-[1600px] mx-auto p-4 md:p-6 overflow-hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+
+      <div class="lg:col-span-8 h-full flex flex-col min-h-0">
+        
+        <div class="flex-1 overflow-y-auto custom-scrollbar pr-2">
+          <app-dailymatcheslist> </app-dailymatcheslist>
+        </div>
+      </div>
+      <div class="lg:col-span-4 flex flex-col min-h-0 gap-6">
+        <div class="h-[56vh] bg-white rounded-[2.5rem] shadow-xl border border-white p-6 flex flex-col overflow-hidden">
+          <div class="flex-1 overflow-y-auto custom-scrollbar pr-1">
+            <app-player-summary></app-player-summary>
+          </div>
+        </div>
+        
+      </div>
+  </div>
+</div>
+

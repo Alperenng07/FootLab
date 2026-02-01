@@ -1,0 +1,75 @@
+<div class="bg-white rounded-[2.5rem] shadow-2xl p-8 border border-slate-50 w-full transition-all duration-500">
+  <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center gap-4">
+      <div class="bg-green-600 p-3 rounded-2xl text-white shadow-lg shadow-green-200">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-2xl font-black text-slate-800 italic uppercase tracking-tighter">Günün Maçları</h2>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest italic flex items-center gap-2">
+          📍 Denizli Yerel Ligleri <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> Canlı
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 bg-slate-50 px-5 py-3 rounded-2xl text-slate-600 font-black text-xs uppercase italic border border-slate-100">
+      <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      {{ currentDate }}
+    </div>
+  </div>
+
+  <div class="space-y-4">
+    <div *ngFor="let m of matches"
+         class="group flex items-center p-6 bg-slate-50 rounded-[2rem] border border-transparent hover:border-green-200 hover:bg-white hover:shadow-xl transition-all duration-300 cursor-pointer">
+
+      <div class="flex flex-col items-center justify-center w-24 border-r border-slate-200 pr-6 mr-6">
+        <span class="font-black text-slate-900 text-lg italic tracking-tighter">{{ m.time }}</span>
+        <span class="text-[9px] font-black text-green-600 uppercase tracking-widest mt-1">Başlayacak</span>
+      </div>
+
+      <div class="flex-1 grid grid-cols-11 items-center gap-4">
+
+        <div class="col-span-4 flex items-center justify-end gap-4">
+          <span class="font-black text-slate-800 text-sm md:text-base italic uppercase text-right leading-tight">
+            {{ m.homeTeamName }}
+          </span>
+          <img [src]="m.homeTeamLogoUrl" class="w-10 h-10 object-contain drop-shadow-sm group-hover:scale-110 transition-transform" alt="home">
+        </div>
+
+        <div class="col-span-3 flex flex-col items-center justify-center gap-1">
+          <div class="bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm">
+            <span class="text-slate-300 font-black italic text-xs uppercase">vs</span>
+          </div>
+          <span class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Maç Detayı</span>
+        </div>
+
+        <div class="col-span-4 flex items-center justify-start gap-4">
+          <img [src]="m.awayTeamLogoUrl" class="w-10 h-10 object-contain drop-shadow-sm group-hover:scale-110 transition-transform" alt="away">
+          <span class="font-black text-slate-800 text-sm md:text-base italic uppercase leading-tight">
+            {{ m.awayTeamName }}
+          </span>
+        </div>
+
+      </div>
+
+      <div class="ml-6 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div class="w-8 h-8 bg-green-50 text-green-600 rounded-full flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8 pt-6 border-t border-slate-50 flex justify-between items-center">
+    <p class="text-[10px] font-bold text-slate-300 italic uppercase">Denizli Yerel Futbol Platformu</p>
+    <button class="bg-green-50 text-green-700 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-green-600 hover:text-white transition-all shadow-sm">
+      Tüm Fikstürü İncele
+    </button>
+  </div>
+</div>

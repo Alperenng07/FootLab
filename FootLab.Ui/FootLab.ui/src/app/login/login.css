@@ -1,0 +1,32 @@
+.animate-in {
+  animation: slideFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+input::placeholder {
+  color: rgba(255, 255, 255, 0.15);
+  font-weight: 500;
+  font-style: italic;
+}
+
+input:focus {
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
+}
+
+/* Mobilde klavye açılınca kartı yukarı itmek için */
+@media (max-height: 700px) {
+  .max-w-md {
+    transform: scale(0.9);
+  }
+}

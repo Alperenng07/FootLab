@@ -1,0 +1,14 @@
+<div *ngIf="players.length === 0" class="flex flex-col items-center justify-center p-12 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+  <div class="text-5xl mb-4">🏃‍♂️</div>
+  <h3 class="text-lg font-bold text-slate-700">Henüz Oyuncu Bulunamadı</h3>
+  <p class="text-sm text-slate-400 text-center">Backend servisinden veri gelmiyor olabilir veya henüz oyuncu eklemedin.</p>
+
+  <button (click)="ngOnInit()" class="mt-4 px-4 py-2 bg-[#00a651] text-white rounded-xl font-bold text-sm">
+    Yeniden Dene
+  </button>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
+  <div *ngFor="let p of players" ...>
+  </div>
+</div>

@@ -1,0 +1,59 @@
+<div class="bg-white rounded-[2.5rem] shadow-xl p-8 border border-slate-100 overflow-hidden">
+  <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+    <h2 class="text-2xl font-black italic text-slate-800 flex items-center gap-3">
+      <span class="bg-slate-100 p-2 rounded-2xl">🏟️</span> Puan Durumu
+    </h2>
+    <div class="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+      <button class="px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-600">21. Hafta</button>
+      <button class="px-6 py-2 text-xs font-black bg-white shadow-sm rounded-xl text-green-700">22. Hafta</button>
+      <button class="px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-600">23. Hafta</button>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left">
+      <thead>
+        <tr class="text-[10px] font-black text-slate-300 uppercase tracking-widest border-b border-slate-50">
+          <th class="pb-4 pl-4 text-center">Durum</th>
+          <th class="pb-4">Takım</th>
+          <th class="pb-4 text-center">O</th>
+          <th class="pb-4 text-center">G</th>
+          <th class="pb-4 text-center">B</th>
+          <th class="pb-4 text-center">M</th>
+          <th class="pb-4 text-center">A</th>
+          <th class="pb-4 text-center">Y</th>
+          <th class="pb-4 text-center">AV</th>
+          <th class="pb-4 text-center text-slate-800">P</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let team of standings" class="group hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0">
+          <td class="py-5 pl-4 text-center">
+            <span *ngIf="team.status === 'champion'" class="w-6 h-6 inline-flex items-center justify-center bg-green-600 text-white text-[10px] font-black rounded-lg shadow-lg shadow-green-200">S</span>
+            <span *ngIf="team.status === 'relegation'" class="w-6 h-6 inline-flex items-center justify-center bg-red-600 text-white text-[10px] font-black rounded-lg shadow-lg shadow-red-200">D</span>
+            <span *ngIf="!team.status" class="text-[11px] font-black text-slate-300">{{team.rank}}</span>
+          </td>
+
+          <td class="py-5 flex items-center gap-3">
+            <img [src]="team.teamLogo" class="w-7 h-7 object-contain grayscale group-hover:grayscale-0 transition-all">
+            <span class="text-sm font-black text-slate-700 italic uppercase">{{team.teamName}}</span>
+          </td>
+
+          <td class="py-5 text-center text-xs font-bold text-slate-400">{{team.played}}</td>
+          <td class="py-5 text-center text-xs font-bold text-slate-600">{{team.won}}</td>
+          <td class="py-5 text-center text-xs font-bold text-slate-400">{{team.draw}}</td>
+          <td class="py-5 text-center text-xs font-bold text-slate-400">{{team.lost}}</td>
+          <td class="py-5 text-center text-xs font-bold text-slate-400">{{team.goalsFor}}</td>
+          <td class="py-5 text-center text-xs font-bold text-slate-400">{{team.goalsAgainst}}</td>
+          <td class="py-5 text-center text-xs font-bold text-slate-400">{{team.average}}</td>
+          <td class="py-5 text-center text-sm font-black text-[#1e3a3a]">{{team.points}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mt-6 flex gap-4 text-[10px] font-bold text-slate-400 italic">
+    <span class="flex items-center gap-1"><span class="w-2 h-2 bg-green-600 rounded-full"></span> S: Şampiyonluk</span>
+    <span class="flex items-center gap-1"><span class="w-2 h-2 bg-red-600 rounded-full"></span> D: Düşme Hattı</span>
+  </div>
+</div>

@@ -32,7 +32,7 @@ namespace FootLab.Bussines.Mapping
             CreateMap<Player, PlayerResultDto>()
                 .ForMember(dest => dest.PositionName, opt => opt.MapFrom(src => src.Position.ToString()))
                 .ForMember(dest => dest.TeamName, opt => opt.MapFrom(src => src.Team != null ? src.Team.Name : "Serbest"))
-                .ForMember(dest => dest.PositionId, opt => opt.MapFrom(src => (int)src.Position));
+                .ForMember(dest => dest.PositionId, opt => opt.MapFrom(src => (int?)src.Position));
 
             // --- MATCH MAPPINGS ---
             CreateMap<MatchForPostDto, Match>();

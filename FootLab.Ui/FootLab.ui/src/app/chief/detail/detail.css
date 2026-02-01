@@ -1,0 +1,28 @@
+/* Giriş Animasyonu */
+.animate-in {
+  animation: modalShow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalShow {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Hover Efektleri */
+button:active {
+  transform: scale(0.98);
+}
+
+/* Scroll Engelleme (Modal açıkken arka taraf kaymasın) */
+:host {
+  display: block;
+  position: fixed;
+  z-index: 999;
+}

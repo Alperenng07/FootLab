@@ -1,0 +1,58 @@
+<div class="fixed inset-0 z-0">
+  <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&q=80&w=2000"
+       class="w-full h-full object-cover brightness-[0.2]">
+  <div class="absolute inset-0 bg-gradient-to-tr from-black via-green-900/20 to-black"></div>
+</div>
+
+<div class="relative z-10 min-h-screen flex items-center justify-center p-6">
+  <div class="w-full max-w-md bg-black/60 backdrop-blur-3xl rounded-[3rem] border border-white/10 p-10 shadow-2xl animate-in">
+
+    <div class="text-center mb-10">
+      <h1 class="text-white text-5xl font-black italic tracking-tighter uppercase leading-none">
+        TOP<span class="text-green-500">CHU</span>
+      </h1>
+      <p class="text-white/30 text-[10px] font-bold uppercase tracking-[0.5em] mt-3">Operasyon Merkezi</p>
+    </div>
+
+    <div *ngIf="viewMode === 'login'" class="space-y-6">
+      <div class="space-y-2">
+        <label class="text-white/40 text-[10px] font-black uppercase tracking-widest ml-4">E-Posta</label>
+        <input type="email" [(ngModel)]="loginData.email" placeholder="stark@footlab.com"
+               class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white font-bold outline-none focus:border-green-500 focus:bg-white/10 transition-all">
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-white/40 text-[10px] font-black uppercase tracking-widest ml-4">Şifre</label>
+        <input type="password" [(ngModel)]="loginData.password" placeholder="••••••••"
+               class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white font-bold outline-none focus:border-green-500 focus:bg-white/10 transition-all">
+      </div>
+
+      <button (click)="onLogin()" class="w-full bg-green-600 hover:bg-green-500 text-white font-black italic uppercase py-5 rounded-2xl shadow-lg shadow-green-900/40 transition-all active:scale-95">
+        GIRIS YAP
+      </button>
+
+      <div class="flex justify-between px-2">
+        <button (click)="viewMode = 'forgot'" class="text-white/30 hover:text-white text-[10px] font-black uppercase tracking-widest transition-colors">Şifremi Unuttum</button>
+        <button (click)="viewMode = 'register'" class="text-green-500 hover:text-green-400 text-[10px] font-black uppercase tracking-widest transition-colors">Yeni Hesap Aç</button>
+      </div>
+    </div>
+
+    <div *ngIf="viewMode === 'register'" class="space-y-4 animate-in">
+      <h2 class="text-white text-xl font-black italic uppercase mb-6">Kayıt Bilgilerinizi Girin</h2>
+      <input type="text" placeholder="Ad Soyad" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white outline-none">
+      <input type="email" placeholder="E-Posta" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white outline-none">
+      <input type="password" placeholder="Şifre" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white outline-none">
+
+      <button class="w-full bg-white text-black font-black italic uppercase py-5 rounded-2xl transition-all">Kayıt İşlemini Tamamla</button>
+      <button (click)="viewMode = 'login'" class="w-full text-white/30 text-[10px] font-black uppercase">Vazgeç</button>
+    </div>
+
+    <div *ngIf="viewMode === 'forgot'" class="space-y-6 animate-in text-center">
+      <p class="text-white/60 text-sm font-bold italic">Kayıtlı e-posta adresini gir, sana yeni bir şifre gönderelim.</p>
+      <input type="email" placeholder="E-Posta Adresin" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white outline-none">
+      <button class="w-full bg-red-600/80 hover:bg-red-600 text-white font-black italic uppercase py-5 rounded-2xl">Kod Gönder</button>
+      <button (click)="viewMode = 'login'" class="text-white/30 text-[10px] font-black uppercase">Geri Dön</button>
+    </div>
+
+  </div>
+</div>

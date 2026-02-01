@@ -1,0 +1,83 @@
+
+<div class="relative min-h-screen w-full flex flex-col overflow-x-hidden">
+
+  <div class="fixed inset-0 z-0">
+    <img src="https://www.thenewworld.co.uk/wp-content/uploads/sites/2/2023/05/GettyImages-1129453765.jpg"
+         class="w-full h-full object-cover grayscale-[15%] brightness-[0.25]">
+    <div class="absolute inset-0 bg-gradient-to-b from-[#14532d]/60 via-black/50 to-black/90"></div>
+  </div>
+
+  <div class="relative z-10 h-72 md:h-50 flex items-center justify-center text-white pt-10">
+    <div class="flex items-center gap-6 md:gap-16 max-w-5xl w-full justify-center px-4">
+
+      <div class="flex flex-col items-center gap-3 w-32 md:w-40 text-center">
+        <div class="bg-white/10 backdrop-blur-xl p-4 rounded-[2rem] border border-white/20 shadow-2xl">
+          <img [src]="matchData?.homeTeamLogo" class="w-16 h-16 md:w-20 md:h-20 object-contain">
+        </div>
+        <h3 class="font-black italic uppercase tracking-tighter text-sm md:text-xl">{{matchData?.homeTeamName}}</h3>
+      </div>
+
+      <div class="flex flex-col items-center">
+        <div class="text-6xl md:text-8xl font-black italic tracking-tighter drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)] leading-none mb-3">
+          {{matchData?.homeScore}} - {{matchData?.awayScore}}
+        </div>
+        <div class="bg-green-600/80 backdrop-blur-md border border-green-400/30 px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">
+          Canlı • 76'
+        </div>
+      </div>
+
+      <div class="flex flex-col items-center gap-3 w-32 md:w-40 text-center">
+        <div class="bg-white/10 backdrop-blur-xl p-4 rounded-[2rem] border border-white/20 shadow-2xl">
+          <img [src]="matchData?.awayTeamLogo" class="w-16 h-16 md:w-20 md:h-20 object-contain">
+        </div>
+        <h3 class="font-black italic uppercase tracking-tighter text-sm md:text-xl">{{matchData?.awayTeamName}}</h3>
+      </div>
+    </div>
+  </div>
+
+  <main class="relative z-20 max-w-6xl mx-auto w-full px-4 -mt-6 pb-20">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+      <div class="lg:col-span-2 bg-white/5 backdrop-blur-2xl rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden">
+        <div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
+          <h4 class="font-black italic uppercase text-white tracking-tighter flex items-center gap-3 text-lg">
+            <span class="w-1.5 h-6 bg-green-500 rounded-full"></span> Maç Olayları
+          </h4>
+        </div>
+
+        <div class="p-8">
+          <div class="space-y-6">
+            <div *ngFor="let event of matchData?.events" class="flex items-center gap-6 group">
+              <span class="text-xs font-black text-white/30 w-10 italic uppercase">{{event.minute}}'</span>
+              <div [class.flex-row-reverse]="event.teamName === matchData?.awayTeamName" class="flex flex-1 items-center gap-4">
+                <div class="bg-white/10 p-2 rounded-xl border border-white/10 group-hover:bg-green-500/20 transition-all">⚽</div>
+                <div class="flex flex-col" [class.items-end]="event.teamName === matchData?.awayTeamName">
+                  <span class="font-black italic uppercase text-white tracking-tight text-sm">{{event.playerName}}</span>
+                  <span class="text-[9px] font-bold text-white/40 uppercase tracking-widest">{{event.teamName}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/5 backdrop-blur-2xl rounded-[2.5rem] border border-white/10 shadow-2xl p-8 flex flex-col gap-6 h-fit">
+        <h4 class="font-black italic uppercase text-white tracking-tighter text-lg border-l-4 border-green-500 pl-4">Saha Bilgisi</h4>
+
+        <div class="space-y-1">
+          <div class="font-black italic uppercase text-white text-xl leading-none tracking-tighter">{{matchData?.stadiumName}}</div>
+          <div class="text-xs font-bold text-white/40 uppercase tracking-widest">{{matchData?.location}}</div>
+        </div>
+
+        <div class="h-44 bg-black/40 rounded-[2rem] overflow-hidden relative border border-white/5">
+          <div class="absolute inset-0 flex items-center justify-center text-white/20 text-[10px] font-black italic uppercase tracking-[0.4em]">Google Maps Aktif</div>
+        </div>
+
+        <button class="w-full bg-green-600 hover:bg-green-500 text-white py-4 rounded-2xl font-black italic uppercase tracking-widest text-xs transition-all shadow-lg shadow-green-900/20">
+          Yol Tarifi Al
+        </button>
+      </div>
+
+    </div>
+  </main>
+</div>

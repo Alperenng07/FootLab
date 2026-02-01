@@ -1,0 +1,65 @@
+<div class="relative min-h-screen w-full flex flex-col items-center justify-start pt-10 pb-20">
+
+  <div class="fixed inset-0 z-0">
+    <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80&w=2000"
+         class="w-full h-full object-cover brightness-[0.35] grayscale-[10%]">
+    <div class="absolute inset-0 bg-gradient-to-b from-[#14532d]/30 via-black/40 to-black/90"></div>
+  </div>
+
+  <main class="relative z-10 w-full max-w-4xl px-4 flex flex-col gap-4">
+
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4 bg-white/5 backdrop-blur-xl p-3 rounded-[2rem] border border-white/10 shadow-2xl">
+      <div class="flex items-center gap-4 px-2">
+        <div class="bg-white p-1.5 rounded-2xl">
+          <img [src]="teamInfo.logo" class="w-10 h-10 object-contain">
+        </div>
+        <h2 class="text-white text-xl font-black italic uppercase tracking-tighter">{{ teamInfo.name }}</h2>
+      </div>
+
+      <nav class="flex gap-1 bg-black/20 p-1 rounded-xl border border-white/5">
+        <button *ngFor="let tab of tabs"
+                (click)="setActiveTab(tab)"
+                [ngClass]="activeTab === tab ? 'bg-white text-[#14532d] shadow-lg' : 'text-white/40 hover:text-white/60'"
+                class="px-5 py-2 text-[9px] font-black uppercase italic tracking-widest transition-all rounded-lg">
+          {{ tab === 'kadro' ? 'Kadro' : tab === 'bilgi' ? 'Bilgi' : 'Takvim' }}
+        </button>
+      </nav>
+    </div>
+
+    <section class="bg-white rounded-[2.5rem] shadow-2xl p-6 min-h-[450px] transition-all duration-500">
+
+      <div *ngIf="activeTab === 'kadro'" class="space-y-6">
+        <h3 class="text-lg font-black italic uppercase text-slate-800 border-l-4 border-green-600 pl-3">Takım Kadrosu</h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3">
+          <div *ngFor="let p of teamInfo.squad"
+               class="group flex items-center justify-between bg-yellow-50 p-3 rounded-2xl border border-slate-100 hover:border-green-200 hover:bg-green-50/30 transition-all cursor-pointer">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                <img [src]="p.img" class="w-full h-full object-cover">
+              </div>
+              <div>
+                <p class="text-slate-900 font-black italic uppercase text-xs leading-none group-hover:text-green-800">{{ p.name }}</p>
+                <p class="text-slate-400 text-[9px] font-bold mt-1 tracking-widest uppercase">{{ p.pos }}</p>
+              </div>
+            </div>
+            <span class="text-slate-300 font-black italic text-sm group-hover:text-green-600">#{{ p.no }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="activeTab === 'bilgi'" class="space-y-6">
+        <h3 class="text-lg font-black italic uppercase text-slate-800 border-l-4 border-green-600 pl-3">Kulüp Bilgileri</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div *ngFor="let item of [{l:'Kuruluş', v:teamInfo.founded}, {l:'Başkan', v:teamInfo.president}, {l:'Teknik Direktör', v:teamInfo.coach}, {l:'Stat', v:teamInfo.stadium}]"
+               class="p-4 bg-yellow-50 rounded-2xl border border-slate-100">
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{{ item.l }}</p>
+            <p class="text-sm font-black italic text-slate-800 uppercase">{{ item.v }}</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+</div>

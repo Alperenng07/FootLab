@@ -1,0 +1,51 @@
+<div class="min-h-screen bg-slate-100">
+  <div class="relative h-80 bg-cover bg-center flex items-end pb-10" style="background-image: url('assets/stadium-bg.jpg'); background-color: #1e3a3a;">
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="max-w-6xl mx-auto w-full px-6 relative z-10 flex items-center gap-8 text-white">
+      <img [src]="playerData?.photoUrl || 'assets/default-player.png'" class="w-40 h-40 rounded-full border-4 border-white object-cover bg-slate-300">
+
+      <div>
+        <h1 class="text-4xl font-black">{{playerData?.fullName || 'Oyuncu Adı Yükleniyor...'}}</h1>
+        <p class="flex items-center gap-2 opacity-80 uppercase tracking-widest text-sm">
+          <img [src]="playerData?.currentTeamLogo" class="w-5 h-5" *ngIf="playerData?.currentTeamLogo">
+          {{playerData?.currentTeam || 'Takım Bilgisi Yok'}} | {{playerData?.position || 'Mevki'}}
+        </p>
+
+        <div class="flex gap-10 mt-6 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20">
+          <div class="text-center"><p class="text-[10px] opacity-60 uppercase">Yaş</p><p class="font-bold">{{playerData?.age || '-'}}</p></div>
+          <div class="text-center"><p class="text-[10px] opacity-60 uppercase">Mevki</p><p class="font-bold">{{playerData?.position || '-'}}</p></div>
+          <div class="text-center"><p class="text-[10px] opacity-60 uppercase">Boy/Kilo</p><p class="font-bold">{{playerData?.heightWeight || '-'}}</p></div>
+          <div class="text-center"><p class="text-[10px] opacity-60 uppercase">Ayak</p><p class="font-bold">{{playerData?.preferredFoot || '-'}}</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <br />
+  <br />
+  <br />
+  <div class="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-6 -mt-6">
+
+    <div class="bg-white rounded-3xl shadow-xl p-6 border border-slate-100">
+      <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">📊 Kariyer Geçmişi</h3>
+      <table class="w-full text-left text-sm">
+        <tr class="text-slate-400 border-b border-slate-50">
+          <th class="pb-2">Sezon</th>
+          <th class="pb-2">Takım</th>
+          <th class="pb-2 text-right">Gol</th>
+        </tr>
+        <tr *ngIf="!playerData?.career" class="text-slate-300 italic"><td colspan="3" class="py-4 text-center">Kariyer verisi bekleniyor...</td></tr>
+        <tr *ngFor="let c of playerData?.career" class="border-b border-slate-50 last:border-0">
+          <td class="py-3 text-slate-400 font-medium">{{c.season}}</td>
+          <td class="py-3 flex items-center gap-2 font-bold"><img [src]="c.teamLogo" class="w-5 h-5">{{c.teamName}}</td>
+          <td class="py-3 text-right font-black">{{c.goals}}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="lg:col-span-2 bg-white rounded-3xl shadow-xl p-6 border border-slate-100 min-h-[300px]">
+      <h3 class="font-bold text-slate-800 mb-4">📈 Son Performans</h3>
+      <div class="flex items-center justify-center h-full text-slate-300 italic">Performans grafikleri hazırlanıyor...</div>
+    </div>
+
+  </div>
+</div>

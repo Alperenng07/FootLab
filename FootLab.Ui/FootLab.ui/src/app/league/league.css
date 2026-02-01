@@ -1,0 +1,40 @@
+.active-tab {
+  /* Koyu Yeşil Aktif Hali */
+  background-color: #14532d;
+  color: white !important;
+  box-shadow: 0 10px 20px -5px rgba(20, 83, 45, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Kaydırma çubuğunu gizle ama kaydırmaya izin ver */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.active-tab {
+  /* Ana Koyu Yeşil Arka Plan */
+  background-color: #14532d;
+  color: white !important;
+  /* Holder Yanma Efekti (Gölge ve Parlama) */
+  box-shadow: 0 10px 25px -5px rgba(20, 83, 45, 0.4), 0 8px 10px -6px rgba(20, 83, 45, 0.4);
+  /* Hafif yukarı kalkma efekti */
+  transform: translateY(-2px);
+  /* Yazı belirginliği */
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.tab-btn:hover:not(.active-tab) {
+  background-color: rgba(20, 83, 45, 0.05);
+}
+/* Aktif sekme yandığında (holder yanması) */
+button.bg-\[\#14532d\] {
+  background-color: #14532d !important;
+  color: white !important;
+  box-shadow: 0 10px 20px -5px rgba(20, 83, 45, 0.4) !important;
+  transform: translateY(-2px);
+}
+
